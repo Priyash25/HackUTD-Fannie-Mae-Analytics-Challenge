@@ -1,0 +1,11 @@
+perfsub=spark.read.csv('/mnt/d/Hack_UTD/cmpnydata/perfSubset.csv',header='true',inferSchema='true')
+
+perfsub.createOrReplaceTempView('psub')
+
+x=spark.sql("SELECT loanID,currIntRate,zeroBalCode,zeroBalEffDate,lastPaidInstallmentDate,currActualUPB,loanAge,remainingMonthsToLegalMaturity,adjustedMonthsToMaturity,maturityDate,msa,currLoanDelinquencyStatus,modFlag,lastPaidInstallmentDate,foreclosureDate,dispositionDate,foreclosureCosts,otherForeclosureProceeds,nonInterestBearingUPB,foreclosurePrincipalWriteOffAmt,ROW_NUMBER() OVER(PARTITION BY loanID ORDER BY remainingMonthsToLegalMaturity) AS ranking  FROM psub GROUP BY loanID,currIntRate,zeroBalCode,zeroBalEffDate,lastPaidInstallmentDate,currActualUPB,loanAge,remainingMonthsToLegalMaturity,adjustedMonthsToMaturity,maturityDate,msa,currLoanDelinquencyStatus,modFlag,lastPaidInstallmentDate,foreclosureDate,dispositionDate,foreclosureCosts,otherForeclosureProceeds,nonInterestBearingUPB,foreclosurePrincipalWriteOffAmt")
+
+x.createOrReplaceTempView('df')
+
+df1=sqlContext.sql("SELECT loanID,currIntRate,zeroBalCode,zeroBalEffDate,lastPaidInstallmentDate,currActualUPB,loanAge,remainingMonthsToLegalMaturity,adjustedMonthsToMaturity,maturityDate,msa,currLoanDelinquencyStatus,modFlag,foreclosureDate,dispositionDate,foreclosureCosts,otherForeclosureProceeds,nonInterestBearingUPB,foreclosurePrincipalWriteOffAmt FROM df where ranking=1")
+
+df1.coalesce(1).write.save('/mnt/d/Hack_UTD/cmpnydata/loanperf1.csv',format='csv')
